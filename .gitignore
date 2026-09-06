@@ -1,0 +1,11 @@
+*.jpg
+*jpeg
+*.pth
+*.png
+*.mp4
+/.venv
+.DS_Store
+*.md
+!README.md
+*.json
+/data
