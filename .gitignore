@@ -9,3 +9,5 @@
 !README.md
 *.json
 /data
+/work_dirs
+*.log
