@@ -92,9 +92,44 @@ param_scheduler = [
 
 train_cfg = dict(
     max_epochs=50,
-    val_interval=1000,
+    val_interval=5,
 )
 
+train_pipeline_stage2 = [
+    dict(
+        type="LoadImageFromFile",
+        backend_args=None,
+    ),
+    dict(
+        type="LoadAnnotations",
+        with_bbox=True,
+    ),
+    dict(
+        type="RandomResize",
+        scale=(640, 640),
+        ratio_range=(0.5, 2.0),
+        keep_ratio=True,
+    ),
+    dict(
+        type="RandomCrop",
+        crop_size=(640, 640),
+    ),
+    dict(
+        type="YOLOXHSVRandomAug",
+    ),
+    dict(
+        type="RandomFlip",
+        prob=0.5,
+    ),
+    dict(
+        type="Pad",
+        size=(640, 640),
+        pad_val=dict(img=(114, 114, 114)),
+    ),
+    dict(
+        type="PackDetInputs",
+    ),
+]
 
 custom_hooks = [
     dict(
@@ -103,7 +138,12 @@ custom_hooks = [
         momentum=0.0002,
         update_buffers=True,
         priority=49,
-    )
+    ),
+    dict(
+        type="PipelineSwitchHook",
+        switch_epoch=40,
+        switch_pipeline=train_pipeline_stage2,
+    ),
 ]
 
 
@@ -111,6 +151,8 @@ default_hooks = dict(
     checkpoint=dict(
         type="CheckpointHook",
         interval=5,
-        max_keep_ckpts=10,
+        save_best="coco/bbox_mAP",
+        rule="greater",
+        max_keep_ckpts=3,
     )
 )
