@@ -1,5 +1,5 @@
 import argparse
-from pathlib import Path
+import json
 
 import cv2
 import numpy as np
@@ -15,8 +15,8 @@ DEFAULT_CHECKPOINT = (
     "best_coco_bbox_mAP_epoch_45.pth"
 )
 
-LINE_START = (200, 82) # (160, 70) ((320, 140 + 70)) - новые данные, множитель разрешения для перевода к разрешению мака - 2x
-LINE_END = (430, 153) #(470, 165) ((940, 330+70)) - для координаты y еще - 70 для перевода к разрешению ролика
+LINE_START = (200, 82) #((400, 234)) - новые данные, множитель разрешения для перевода к разрешению мака - 2x
+LINE_END = (430, 153) #((860, 376)) - для координаты y еще - 70 для перевода к разрешению ролика
 DEAD_ZONE_PX = 10
 MOTION_EPS_PX = 1.0
 REVERSE_CONFIRM_FRAMES = 10
@@ -144,6 +144,9 @@ def main():
         (width, height),
     )
 
+    if not writer.isOpened():
+        raise RuntimeError(f"Could not create output video: {args.output}")
+
     tracker = sv.ByteTrack(
         track_activation_threshold=0.40,
         lost_track_buffer=75,
@@ -160,6 +163,8 @@ def main():
     reverse_streak = 0
     forward_streak = 0
     reverse_motion_detected = False
+    reverse_start_frame = None
+    anomalies = []
 
     forward_count = 0
     backward_count = 0
@@ -286,10 +291,7 @@ def main():
                 cv2.putText(
                     frame,
                     f"ID {track_id}",
-                    (
-                        x1i,
-                        max(y1i - 8, 20),
-                    ),
+                    (x1i, max(y1i - 8, 20)),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
                     (0, 255, 0),
@@ -315,16 +317,26 @@ def main():
                 reverse_streak = 0
                 forward_streak = 0
 
+        if not reverse_motion_detected and reverse_streak >= REVERSE_CONFIRM_FRAMES:
+            reverse_motion_detected = True
+            reverse_start_frame = frame_number - REVERSE_CONFIRM_FRAMES + 1
 
-            if not reverse_motion_detected and reverse_streak >= REVERSE_CONFIRM_FRAMES:
-                reverse_motion_detected = True
+            print(f"Frame {frame_number}: ANOMALY - reverse motion detected")
+            
+        if reverse_motion_detected and forward_streak >= FORWARD_CONFIRM_FRAMES:
+            reverse_motion_detected = False
 
-                print(f"Frame {frame_number}: ANOMALY - reverse motion detected")
-                
-            if reverse_motion_detected and forward_streak >= FORWARD_CONFIRM_FRAMES:
-                reverse_motion_detected = False
+            anomaly = {
+                "type": "reverse_motion",
+                "start_frame": reverse_start_frame,
+                "end_frame": frame_number,
+                "start_time": round(reverse_start_frame / fps, 2),
+                "end_time": round(frame_number / fps, 2),
+            }
 
-                print(f"Frame {frame_number}: Reverse motion ended")
+            anomalies.append(anomaly)
+            print(f"Frame {frame_number}: Reverse motion ended")
+            reverse_start_frame = None
 
         cv2.line(
             frame,
@@ -435,14 +447,37 @@ def main():
                 f"{frame_number}/{total_frames}"
             )
 
+    if reverse_motion_detected and reverse_start_frame is not None: 
+        end_frame = frame_number - 1
+        anomalies.append(
+        {
+            "type": "reverse_motion",
+            "start_frame": reverse_start_frame,
+            "end_frame": end_frame,
+            "start_time": round(reverse_start_frame / fps, 2),
+            "end_time": round(end_frame / fps, 2),
+        })
+
     cap.release()
     writer.release()
+
+    net_count = forward_count - backward_count
+    
+    processing_result = {
+    "total_bags": net_count,
+    "forward": forward_count,
+    "backward": backward_count,
+    "anomalies": anomalies
+    }
+
+    with open("counted_results.json", "w", encoding="utf-8") as file:
+        json.dump(processing_result, file, indent=4, ensure_ascii=False)
 
     print()
     print("Done")
     print(f"Forward:  {forward_count}")
     print(f"Backward: {backward_count}")
-    print(f"Net:      {forward_count - backward_count}")
+    print(f"Net:      {net_count}")
     print(f"Output:   {args.output}")
 
 
