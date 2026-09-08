@@ -2,6 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
 from app.services.jobs import create_job, get_job
 
 app = FastAPI(
@@ -58,3 +59,33 @@ def job_status(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     
     return job
+
+@app.get("/jobs/{job_id}/result")
+def job_result(job_id: str):
+    job = get_job(job_id)
+
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job["status"] != "completed":
+        raise HTTPException(status_code=409, detail="Job is not completed")
+
+    return job["result"]
+
+
+@app.get("/jobs/{job_id}/video")
+def job_video(job_id: str):
+    job = get_job(job_id)
+
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job["status"] != "completed":
+        raise HTTPException(status_code=409, detail="Job is not completed")
+
+    output_path = Path(job["output_path"])
+
+    if not output_path.exists():
+        raise HTTPException(status_code=404, detail="Processed video not found")
+
+    return FileResponse(path=output_path, media_type="video/mp4", filename=output_path.name)
