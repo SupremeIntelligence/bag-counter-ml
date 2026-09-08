@@ -64,3 +64,16 @@ def run_job(job_id, input_path, output_path, result_path):
 
 def get_job(job_id):
     return jobs.get(job_id)
+
+def recover_interrupted_jobs():
+    changed = False
+
+    for job in jobs.values():
+        if job["status"] in ("queued", "processing"):
+            job["status"] = "failed"
+            job["error"] = "Job was interrupted by server restart"
+            changed = True
+    if changed:
+        save_jobs()
+
+recover_interrupted_jobs()
