@@ -8,6 +8,7 @@
 *.md
 !README.md
 *.json
-/data
-/work_dirs
+/data/
+/work_dirs/
 *.log
+__pycache__/
