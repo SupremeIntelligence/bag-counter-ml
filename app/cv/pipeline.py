@@ -10,8 +10,8 @@ import torch
 CONFIG_PATH = "configs/rtmdet_bag.py"
 
 DEFAULT_CHECKPOINT = (
-    "work_dirs/rtmdet_bag/"
-    "best_coco_bbox_mAP_epoch_45.pth"
+    "models/"
+    "rtmdet_bag.pth"
 )
 
 LINE_START = (200, 82) #((400, 234)) - новые данные, множитель разрешения для перевода к разрешению мака - 2x

@@ -1,0 +1,10 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+storage
+data
+*.mp4
+*.json
+work_dirs
