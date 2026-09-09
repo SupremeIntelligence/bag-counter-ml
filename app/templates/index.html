@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bag Counter</title>
+</head>
+<body>
+    <h1>Bag Counter</h1>
+
+    <input
+        id="video-input"
+        type="file"
+        accept="video/*"
+    >
+
+    <button id="process-button">
+        Process video
+    </button>
+
+    <p id="status"></p>
+
+    <div id="result" hidden>
+        <p>
+            Total bags:
+            <span id="total-bags"></span>
+        </p>
+
+        <p>
+            Forward:
+            <span id="forward"></span>
+        </p>
+
+        <p>
+            Backward:
+            <span id="backward"></span>
+        </p>
+
+        <p>
+            Anomalies:
+            <span id="anomalies"></span>
+        </p>
+
+        <a
+            id="download-link"
+            href="#"
+        >
+            Download processed video
+        </a>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -3,11 +3,15 @@ from uuid import uuid4
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.requests import Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from app.services.jobs import create_job, get_job
 
-app = FastAPI(
-    title="Bag Counter API",
-)
+app = FastAPI(title="Bag Counter API")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+templates = Jinja2Templates(directory="app/templates")
 
 STORAGE_DIR = Path("storage")
 STORAGE_DIR.mkdir(exist_ok=True)
@@ -15,10 +19,11 @@ STORAGE_DIR.mkdir(exist_ok=True)
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok"
-    }
+    return { "status": "ok"}
 
+@app.get("/")
+def index(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.post("/videos")
 async def upload_video(file: UploadFile = File(...)):
