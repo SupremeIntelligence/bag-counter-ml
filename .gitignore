@@ -1,6 +1,5 @@
 *.jpg
 *jpeg
-*.pth
 *.png
 *.mp4
 /.venv
