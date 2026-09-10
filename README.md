@@ -154,7 +154,7 @@ This anomaly is also displayed on the processed video while reverse motion is ac
 
 | Original frame | Processed frame |
 |---|---|
-| ![](docs/raw_frame.png) | ![](docs/processed_frame.png)
+| ![](docs/raw_frame.png) | ![](docs/processed_frame.png) |
 
 ## Processing Result
 
@@ -197,13 +197,20 @@ python3.10 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install dependencies:
+Install project dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-MMCV may require a platform-specific installation depending on the operating system and CUDA configuration.
+Install OpenMIM and MMCV:
+
+```bash
+python -m pip install openmim
+mim install "mmcv==2.1.0"
+```
+
+MMCV installation may depend on the operating system, PyTorch version and CUDA configuration.
 
 The project was tested with:
 
@@ -243,7 +250,31 @@ http://127.0.0.1:8000/health
 
 ## Docker
 
-### Build
+### Recommended: Docker Compose
+
+The recommended way to run the application is Docker Compose.
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+After the container starts, open:
+
+```text
+http://localhost:8000
+```
+
+Uploaded videos, processed videos and job metadata are stored in the mounted `storage/` directory and remain available after the container is recreated.
+
+To stop the application:
+
+```bash
+docker compose down
+```
+
+### Manual Build
 
 Build the Docker image:
 
@@ -382,7 +413,15 @@ Example completed job:
         "total_bags": 125,
         "forward": 128,
         "backward": 3,
-        "anomalies": []
+        "anomalies": [
+            {
+                "type": "reverse_motion",
+                "start_frame": 2925,
+                "end_frame": 4422,
+                "start_time": 117.0,
+                "end_time": 176.88
+            }
+        ]
     },
     "error": null
 }
@@ -692,13 +731,20 @@ python3.10 -m venv .venv
 source .venv/bin/activate
 ```
 
-Установите зависимости:
+Установите зависимости проекта:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-MMCV может потребовать отдельной установки в зависимости от операционной системы и конфигурации CUDA.
+Установите OpenMIM и MMCV:
+
+```bash
+python -m pip install openmim
+mim install "mmcv==2.1.0"
+```
+
+Установка MMCV может зависеть от операционной системы, версии PyTorch и конфигурации CUDA.
 
 Проект был протестирован со следующими версиями:
 
@@ -738,7 +784,31 @@ http://127.0.0.1:8000/health
 
 ## Docker
 
-### Сборка
+### Рекомендуемый запуск: Docker Compose
+
+Рекомендуемый способ запуска приложения — Docker Compose.
+
+Из корня проекта выполните:
+
+```bash
+docker compose up --build
+```
+
+После запуска контейнера откройте:
+
+```text
+http://localhost:8000
+```
+
+Загруженные видео, обработанные видео и метаданные задач сохраняются в подключённой директории `storage/` и не теряются после пересоздания контейнера.
+
+Для остановки приложения:
+
+```bash
+docker compose down
+```
+
+### Ручная сборка
 
 Соберите Docker-образ:
 
@@ -877,7 +947,15 @@ failed
         "total_bags": 125,
         "forward": 128,
         "backward": 3,
-        "anomalies": []
+        "anomalies": [
+            {
+                "type": "reverse_motion",
+                "start_frame": 2925,
+                "end_frame": 4422,
+                "start_time": 117.0,
+                "end_time": 176.88
+            }
+        ]
     },
     "error": null
 }
