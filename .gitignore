@@ -1,6 +1,8 @@
 *.jpg
 *jpeg
 *.png
+!docs/raw_frame.png 
+!docs/processed_frame.png
 *.mp4
 /.venv
 .DS_Store
